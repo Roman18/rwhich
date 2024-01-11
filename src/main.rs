@@ -32,7 +32,7 @@ fn main(){
             .map(|(_, f)| f);
 
     let mut _path: PathBuf;
-    println!("{}", is_executable(Path::new("D:\\Neovim\\bin\\rustc.exe")));
+
     for path in splited{
 
             _path = Path::new(path).join(&args[0]);
