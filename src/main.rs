@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use is_executable::is_executable;
 
 fn main(){
-    let env_var = "PATH";
+    const ENV_VAR: &str = "PATH";
+    const PATH_SEP: &str = if cfg!(windows) {";"} else {":"};
+
     // {{{ Collect cli arguments
     let tmp = env::args().skip(1);
 
@@ -16,17 +18,17 @@ fn main(){
     let args: Vec<String> = tmp.collect();
     // }}}
 
-    let res = env::var(env_var);
+    let res = env::var(ENV_VAR);
 
     let value = match  res{
         Ok(res) => res,
         Err(_) => {
-            eprintln!("Environment variable {} not found", env_var);
+            eprintln!("Environment variable {} not found", ENV_VAR);
             exit(1);
         }, 
     };
 
-    let splited = value.split(";")
+    let splited = value.split(PATH_SEP)
             .enumerate()
             .filter(|&(_, f)| f != "")
             .map(|(_, f)| f);
