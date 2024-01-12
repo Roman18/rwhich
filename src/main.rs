@@ -2,21 +2,35 @@ use std::env;
 use std::process::exit;
 use std::path::{Path, PathBuf};
 use is_executable::is_executable;
+use clap::{arg, command,Arg, ArgMatches};
+
+
+fn parse_args() -> ArgMatches{
+    let matches = command!().about("rwhich returns the pathnames of the executable")
+        .arg(
+            Arg::new("bin")
+                .required(true)
+                .help("The name of binary")
+        )
+        .arg(
+            arg!(
+                -a --all "Show all occurence of binary"
+            )
+            .help("Print all matching pathnames of binary")
+        )
+        .get_matches();
+
+    matches
+}
 
 fn main(){
     const ENV_VAR: &str = "PATH";
     const PATH_SEP: &str = if cfg!(windows) {";"} else {":"};
 
-    // {{{ Collect cli arguments
-    let tmp = env::args().skip(1);
-
-    if tmp.len() < 1{
-        eprintln!("Usage: rwhich <bin>");
-        exit(1);
-    }
-
-    let args: Vec<String> = tmp.collect();
-    // }}}
+    let args = parse_args();
+    let bin_name = args.get_one::<String>("bin").unwrap();
+    let find_all = args.get_one::<bool>("all").unwrap();
+    
 
     let res = env::var(ENV_VAR);
 
@@ -37,10 +51,13 @@ fn main(){
 
     for path in splited{
 
-            _path = Path::new(path).join(&args[0]);
+            _path = Path::new(path).join(bin_name);
 
             if _path.exists() && is_executable(_path.as_path()){
-                println!("{}", _path.as_path().display())
+                println!("{}", _path.as_path().display());
+                if !find_all{
+                    break;
+                }
             }
     }
 }
